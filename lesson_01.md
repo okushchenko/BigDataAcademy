@@ -123,14 +123,14 @@ hive
 ```
 
 ```
-create table social(
+CREATE TABLE social(
   userid int,
   notify string,
   targetid int,
   `timestamp` timestamp
   )
-  clustered by (userid) into 5 buckets
-  stored as orc
+  CLUSTERED BY (userid) INTO 5 buckets
+  STORED AS orc
 ```
 
 ```

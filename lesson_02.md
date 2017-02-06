@@ -97,7 +97,7 @@ mysql -uroot -pcloudera retail_db
 ```
 
 ```sql
-create table departments_data like departments;
+CREATE TABLE departments_data LIKE departments;
 ```
 
 ```sh
@@ -109,8 +109,8 @@ mysql -uroot -pcloudera retail_db
 ```
 
 ```sql
-select count(*) from departments_data;
-update departments_data SET department_name = '';
+SELECT count(*) FROM departments_data;
+UPDATE departments_data SET department_name = '';
 ```
 
 ```sh
@@ -122,7 +122,7 @@ mysql -uroot -pcloudera retail_db
 ```
 
 ```sql
-select count(*) from departments_data;
+SELECT count(*) FROM departments_data;
 ```
 
 Job creating:
@@ -196,7 +196,7 @@ ls
 ```
 
 ```sql
-csv = LOAD 'generated.5.csv' using PigStorage(',') as (userid: int, notify: chararray, targetid: int, timestamp: int);
+csv = LOAD 'generated.5.csv' USING PigStorage(',') AS (userid: int, notify: chararray, targetid: int, timestamp: int);
 DUMP csv;
 ```
 
@@ -240,7 +240,7 @@ Outputs
 ```
 
 ```sql
-csv_count = FOREACH csv_grouped GENERATE group as userid, COUNT(csv);
+csv_count = FOREACH csv_grouped GENERATE GROUP AS userid, COUNT(csv);
 ILLUSTRATE csv_count;
 ```
 
@@ -303,7 +303,7 @@ union_type
 ```
 
 ```sql
-create table social_users(
+CREATE TABLE social_users(
   userid int,
   notify string
   )
@@ -328,18 +328,18 @@ LOAD DATA INPATH '/generated.1.csv' INTO TABLE social_new;
 `LOAD DATA` will MOVE (not copy !!!) file to `/apps/hive/warehouse/social` on HDFS
 
 ```sql
-create table social_new(
+CREATE TABLE social_new(
   userid int,
   notify string,
   targetid int,
   `timestamp` int
   )
-  stored as orc;
+  STORED AS orc;
 ```
 
 ```sql
 LOAD DATA INPATH '/generated.5.csv' INTO TABLE social_new;
-select count(*) from social_new;
+SELECT count(*) FROM social_new;
 ```
 
 Outputs:
@@ -348,7 +348,7 @@ Caused by: java.io.IOException: Malformed ORC file hdfs://quickstart.cloudera:80
 ```
 
 ```sql
-drop table social_new;
+DROP TABLE social_new;
 ```
 
 ```sh
@@ -356,20 +356,20 @@ hadoop fs -put generated.5.csv /generated.5.csv
 ```
 
 ```sql
-create table social_new(
+CREATE TABLE social_new(
   userid int,
   notify string,
   targetid int,
   `timestamp` int
 )
-row format delimited
-fields terminated by ','
-stored as textfile;
+ROW FORMAT delimited
+FIELDS TERMINATED BY ','
+STORED AS textfile;
 ```
 
 ```sql
 LOAD DATA INPATH '/generated.5.csv' INTO TABLE social_new;
-select count(*) from social_new;
+SELECT count(*) FROM social_new;
 ```
 
 Outputs:
@@ -398,26 +398,26 @@ Hive support inputs from:
 Recommended format: ORC (STORED AS ORC)
 
 Cost Based Optimization:
-```
+```sql
 set hive.cbo.enable=true;
 set hive.compute.query.using.stats=true;
 set hive.stats.fetch.column.stats=true;
 set hive.stats.fetch.partition.stats=true;
 ```
 
-```
-analyze table TableName compute statistics for columns;
+```sql
+ANALYZE TABLE social_users COMPUTE STATISTICS FOR COLUMNS;
 ```
 
 // Memory Joins:
 Slides.
 
 // Sort-Merge-Bucket JOIN
-```
-set hive.auto.convert.sortmerge.join=true;
-set hive.optimize.bucketmapjoin = true;
-set hive.optimize.bucketmapjoin.sortedmerge = true;
-set hive.auto.convert.sortmerge.join.noconditionaltask = true;
+```sql
+SET hive.auto.convert.sortmerge.join=true;
+SET hive.optimize.bucketmapjoin=true;
+SET hive.optimize.bucketmapjoin.sortedmerge=true;
+SET hive.auto.convert.sortmerge.join.noconditionaltask=true;
 ```
 
 ```sql
@@ -434,22 +434,22 @@ Skewed problem:
 	We want to do a join corresponding to the following query:
 
 ```sql
-select A.id from A join B on A.id = B.id
+SELECT A.id FROM A JOIN B ON A.id = B.id
 ```
 
 	A set of Mappers read the tables and gives them to Reducers based on the keys. e.g., rows with key 1 go to Reducer R1, rows with key 2 go to Reducer R2 and so on. These Reducers do a cross product of the values from A and B, and write the output. The Reducer R4 gets rows from A, but will not produce any results.
 	Now let's assume that A was highly skewed in favor of id = 1. Reducers R2 and R3 will complete quickly but R1 will continue for a long time, thus becoming the bottleneck. If the user has information about the skew, the bottleneck can be avoided manually as follows:
 
 ```sql
-select A.id from A join B on A.id = B.id where A.id <> 1;
-select A.id from A join B on A.id = B.id where A.id = 1 and B.id = 1;
+SELECT A.id FROM A JOIN B ON A.id = B.id WHERE A.id <> 1;
+SELECT A.id from A JOIN B ON A.id = B.id WHERE A.id = 1 AND B.id = 1;
 ```
 
 https://cwiki.apache.org/confluence/display/Hive/ListBucketing#ListBucketing-SkewedTablevs.ListBucketingTable
 
 Compression:
 
-```
+```sql
 SET hive.exec.compress.output=true;
 SET io.seqfile.compression.type=BLOCK;
 ```
@@ -457,8 +457,8 @@ SET io.seqfile.compression.type=BLOCK;
 LZO compression supported. See: https://cwiki.apache.org/confluence/display/Hive/LanguageManual+LZO
 
 //GROUP by
-```
-set hive.map.aggr=true;
+```sql
+SET hive.map.aggr=true;
 ```
 
 Spark
